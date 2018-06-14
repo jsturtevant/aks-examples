@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotrod
+spec:
+  selector:
+    matchLabels:
+      app: hotrod
+  template:
+    metadata:
+      labels:
+        app: hotrod
+    spec:
+      containers:
+      - name: hotrod
+        image: jaegertracing/example-hotrod:latest
+        ports:
+        - containerPort: 8080
+        - containerPort: 8081
+        - containerPort: 8082
+        - containerPort: 8083
+        args:
+          - "--jaeger-agent.host-port=jaeger-agent:6831"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: hotrod
+spec:
+  selector:
+    app: hotrod
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: LoadBalancer
