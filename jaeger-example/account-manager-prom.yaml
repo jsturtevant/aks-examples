@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+#
+# Copyright 2015-2017 Red Hat, Inc. and/or its affiliates
+# and other contributors as indicated by the @author tags.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ordermgr
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        service: ordermgr
+      annotations:
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - name: ordermgr 
+        image: objectiser/kubeotprom-ordermgr:0.0.1
+        ports:
+        - name: http
+          containerPort: 8080
+        - name: prometheus-jmx
+          containerPort: 9099
+        env:
+          - name: JAEGER_SERVICE_NAME
+            value: ordermgr
+          - name: JAEGER_AGENT_HOST
+            value: jaeger-agent
+          - name: JAEGER_SAMPLER_TYPE
+            value: const
+          - name: JAEGER_SAMPLER_PARAM
+            value: "1"
+          - name: JAEGER_REPORTER_LOG_SPANS
+            value: "true"
+          - name: JAEGER_TAGS
+            value: "version=${VERSION}"
+          - name: ACCOUNTMGR_URL
+            value: "http://accountmgr:8080"
+          - name: OPENTRACING_METRICS_EXPORTER_HTTP_PATH
+            value: "/metrics"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ordermgr
+  labels:
+    service: ordermgr
+spec:
+  type: LoadBalancer
+  selector:
+    service: ordermgr
+  ports:
+  - name: http
+    port: 80
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: accountmgr
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        service: accountmgr
+      annotations:
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - name: accountmgr 
+        image: objectiser/kubeotprom-accountmgr:0.0.1
+        ports:
+        - name: http
+          containerPort: 8080
+        - name: prometheus-jmx
+          containerPort: 9099
+        env:
+          - name: JAEGER_SERVICE_NAME
+            value: accountmgr
+          - name: JAEGER_AGENT_HOST
+            value: jaeger-agent
+          - name: JAEGER_SAMPLER_TYPE
+            value: const
+          - name: JAEGER_SAMPLER_PARAM
+            value: "1"
+          - name: JAEGER_REPORTER_LOG_SPANS
+            value: "true"
+          - name: JAEGER_TAGS
+            value: "version=${VERSION}"
+          - name: OPENTRACING_METRICS_EXPORTER_HTTP_PATH
+            value: "/metrics"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: accountmgr
+  labels:
+    service: accountmgr
+spec:
+  type: LoadBalancer
+  selector:
+    service: accountmgr
+  ports:
+  - name: http
+    port: 80
+
