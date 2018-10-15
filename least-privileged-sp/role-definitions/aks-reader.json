@@ -1,0 +1,15 @@
+{
+    "Name": "AKS IP Role",
+    "IsCustom": true,
+    "Description": "Needed for attach of ip address to load balancer created in K8s cluster.",
+    "Actions": [
+        "Microsoft.Network/publicIPAddresses/join/action",
+        "Microsoft.Network/publicIPAddresses/read"
+    ],
+    "NotActions": [],
+    "DataActions": [],
+    "NotDataActions": [],
+    "AssignableScopes": [
+        "/subscriptions/SUBID"
+    ]
+}

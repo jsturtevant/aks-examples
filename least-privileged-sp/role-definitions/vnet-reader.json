@@ -1,0 +1,15 @@
+{
+    "Name": "AKS VNet Role",
+    "IsCustom": true,
+    "Description": "For integrating K8s with existing vnet.",
+    "Actions": [
+        "Microsoft.Network/virtualNetworks/subnets/join/action",
+        "Microsoft.Network/virtualNetworks/subnets/read"
+    ],
+    "NotActions": [],
+    "DataActions": [],
+    "NotDataActions": [],
+    "AssignableScopes": [
+        "/subscriptions/SUBID"
+    ]
+}
