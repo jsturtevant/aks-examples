@@ -14,15 +14,7 @@ ACR_NAME=${4:-lpspacr}
 IP_ROLE_NAME="AKS IP Role"
 VNET_ROLE_NAME="AKS VNet Role"
 
-# create service principle with no permissions
-sp=$(az ad sp show --id "http://$NAME")
-if [[ -z "$sp" ]]; then
-    # no sp let's create one
-    echo "Creating sp..."
-    az ad sp create-for-rbac --skip-assignment -n $NAME
-fi
-
-spid=$(az ad sp show --id "http://$NAME" | jq -r .objectId)
+spid=$(az ad sp show --id "http://$NAME" -o json | jq -r .objectId)
 
 # create custom roles
 iprole=$(az role definition list -n "$IP_ROLE_NAME" -o json | jq '.[]')
@@ -38,25 +30,26 @@ if [[ -z "$vnetrole" ]]; then
 fi
 
 # Assign permission to the vnet
-vnetid=$(az network vnet show -n $VNET_NAME -g $VNET_RG | jq -r .id)
-vnetRA=$(az role assignment list --role "$VNET_ROLE_NAME" --scope $vnetid --assignee $spid | jq '.[]')
+vnetid=$(az network vnet show -n $VNET_NAME -g $VNET_RG -o json | jq -r .id)
+vnetRA=$(az role assignment list --role "$VNET_ROLE_NAME" --scope $vnetid --assignee $spid -o json | jq '.[]')
 if [[ -z "$vnetRA" ]]; then
     # role not found 
     az role assignment create --role "$VNET_ROLE_NAME" --scope $vnetid --assignee-object-id $spid
 fi
 
 # Assign permission to the RG with the IP's
-ipRA=$(az role assignment list --role "$IP_ROLE_NAME" --resource-group $IP_RG  --assignee $spid | jq '.[]')
+ipRA=$(az role assignment list --role "$IP_ROLE_NAME" --resource-group $IP_RG  --assignee $spid -o json | jq '.[]')
 if [[ -z "$ipRA" ]]; then
     # role not found 
     az role assignment create --role "$IP_ROLE_NAME" --resource-group $IP_RG --assignee-object-id $spid
 fi
 
 # Assign permission to the ACR
-acrid=$(az acr show -n $ACR_NAME | jq -r .id)
-acrRA=$(az role assignment list --role "Reader" --scope $acrid --assignee $spid | jq '.[]')
+acrid=$(az acr show -n $ACR_NAME -o json | jq -r .id)
+acrRA=$(az role assignment list --role "Reader" --scope $acrid --assignee $spid -o json | jq '.[]')
 if [[ -z "$acrRA" ]]; then
     # role not found 
     az role assignment create --role "Reader" --scope $acrid --assignee-object-id $spid
 fi
+
 
