@@ -21,7 +21,7 @@ aksclustername=lpsp-aks-cluster
 aksrg=tmp-lpsp-aks
 ```
 
-## Create the Service Principle with least amount of required permissions
+## Create the Service principal with least amount of required permissions
 First update the Custom Role Definitions to use your subscription ID:
 
 ```
@@ -29,17 +29,17 @@ sed -i 's|SUBID|'${subid}'|g' role-definitions/aks-reader.json
 sed -i 's|SUBID|'${subid}'|g' role-definitions/vnet-reader.json
 ```
 
-This will create and assign roles to the service principle:
+This will create and assign roles to the service principal:
 
 ```bash
-# Create a service principle (if you already have one then can skip creation)
+# Create a service principal (if you already have one then can skip creation)
 clientsecret=$(az ad sp create-for-rbac --skip-assignment -n $spname -o json | jq -r .password)
 
 # This uses the defaults which can be overridden (see script)
 ./create-aks-sp.sh $spname
 ```
 
-## Create AKS cluster with the Service Principle
+## Create AKS cluster with the Service principal
 
 ```bash
 clientid=$(az ad sp show --id "http://$spname" | jq -r .appId)
@@ -54,7 +54,7 @@ terraform apply --var "vnet_subnet_id=$subnetid" \
 cd ..
 ```
 
-> note: Client secret was set when `create-aks-sp.sh` was run.  If you were adding permissions to an existing Service Principle you will need to set `$clientsecret` manually.
+> note: Client secret was set when `create-aks-sp.sh` was run.  If you were adding permissions to an existing Service principal you will need to set `$clientsecret` manually.
 
 ## Test IP address creation
 You can confirm your deployment into the vnet by looking at the ip addresses allocated.
