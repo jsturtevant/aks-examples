@@ -8,6 +8,7 @@ resource "azurerm_kubernetes_cluster" "k8s-cluster-name" {
   location            = "${azurerm_resource_group.k8s-resource-group.location}" 
   resource_group_name = "${azurerm_resource_group.k8s-resource-group.name}"   
   dns_prefix          = "${var.dns_prefix}"
+  kubernetes_version = "1.10.8"
 
   agent_pool_profile {
     name            = "default"
