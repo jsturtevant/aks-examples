@@ -29,9 +29,9 @@ sed -i 's|SUBID|'${subid}'|g' role-definitions/aks-reader.json
 sed -i 's|SUBID|'${subid}'|g' role-definitions/vnet-reader.json
 ```
 
-This will create and assign roles to the service principle.  
+This will create and assign roles to the service principle:
 
-``bash
+```bash
 # Create a service principle (if you already have one then can skip creation)
 clientsecret=$(az ad sp create-for-rbac --skip-assignment -n $spname -o json | jq -r .password)
 
